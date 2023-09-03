@@ -56,13 +56,10 @@ function multiply(a, b) {
 }
 
 function divide(a, b) {
-  console.log("Dividing...", b)
   if(b === 0) {
-    console.log('test')
     return "invalid";
   }
   else {
-    console.log(b)
     return a / b;
   }
 }
@@ -95,10 +92,7 @@ function clearOne() {
 function handleEquals() {
   // Error handling
   if(currentDisplay === "") return;
-  console.log(previousDisplay, currentDisplay)
-  console.log(operate(...previousDisplay, +currentDisplay))
   if(operate(...previousDisplay, +currentDisplay) === "invalid") {
-    console.log(123)
     calculatorCurrent.innerHTML = "Dumbass"
     currentDisplay = "";
     return;
