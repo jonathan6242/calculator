@@ -185,6 +185,7 @@ document.onkeydown = (e) => {
       handleOperator("÷");
       break;
     case "=":
+    case "Enter":
       e.preventDefault();
       handleEquals();
       break;
