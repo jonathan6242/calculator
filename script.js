@@ -26,6 +26,9 @@ function operate(a, operator, b) {
     case "÷":
       result = divide(a, b);
       break;
+    case "%":
+      result = modulo(a, b);
+      break;
   }
 
   if(result !== "invalid") {
@@ -62,6 +65,10 @@ function divide(a, b) {
     console.log(b)
     return a / b;
   }
+}
+
+function modulo(a, b) {
+  return a % b;
 }
 
 function updateCurrentUI() {
@@ -173,6 +180,7 @@ document.onkeydown = (e) => {
   switch(e.key) {
     case "+":
     case "-":
+    case "%":
       e.preventDefault();
       handleOperator(e.key);
       break;
