@@ -87,9 +87,9 @@ function clearOne() {
   if(currentDisplay.length < 1) return;
   if(currentDisplay.length === 1) {
     currentDisplay = "0";
-    return;
+  } else {
+    currentDisplay = currentDisplay.slice(0, -1);
   }
-  currentDisplay = currentDisplay.slice(0, -1);
   updateCurrentUI();
 }
 
