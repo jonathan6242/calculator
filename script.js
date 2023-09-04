@@ -199,7 +199,7 @@ document.onkeydown = (e) => {
       e.preventDefault();
       handleDecimal();
       break;
-    case "C":
+    case "c":
       e.preventDefault();
       clearOne();
       break;
