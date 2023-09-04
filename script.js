@@ -84,7 +84,11 @@ function clearAll() {
 }
 
 function clearOne() {
-  if(currentDisplay.length <= 1) return;
+  if(currentDisplay.length < 1) return;
+  if(currentDisplay.length === 1) {
+    currentDisplay = "0";
+    return;
+  }
   currentDisplay = currentDisplay.slice(0, -1);
   updateCurrentUI();
 }
