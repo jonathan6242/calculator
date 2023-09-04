@@ -97,7 +97,7 @@ function clearOne() {
 }
 
 function handleEquals() {
-  // Percentage
+  // Handle percentages
   if (previousDisplay.includes("%")) {
     handlePercent();
     return;
@@ -122,8 +122,8 @@ function handleEquals() {
   if (previousDisplay.length === 2) {
     previousDisplay.push(currentValue);
   }
-  currentValue = operate(...previousDisplay);
-  currentDisplay = currentValue;
+  currentDisplay = operate(...previousDisplay);
+  currentValue = currentDisplay;
   updateCurrentUI();
   updatePreviousUI();
 
@@ -147,9 +147,6 @@ function handleNumber(number) {
 }
 
 function handleOperator(operator) {
-  console.log(currentValue);
-  console.log(currentDisplay);
-  console.log(previousDisplay);
   if (previousDisplay.length === 2) {
     if (
       operator === "÷" &&
@@ -163,6 +160,7 @@ function handleOperator(operator) {
     // Calculate result
     previousDisplay.push(currentValue);
     currentDisplay = operate(...previousDisplay);
+    currentValue = +currentDisplay;
   }
   // Clear previous display
   previousDisplay = [];
@@ -190,14 +188,14 @@ function handlePercent() {
     // Calculate result
     previousDisplay.push(currentValue);
     currentDisplay = operate(...previousDisplay);
-    currentValue = currentDisplay;
+    currentValue = +currentDisplay;
   }
 
   previousDisplay = [];
   previousDisplay.push(currentValue);
   previousDisplay.push("%");
   currentDisplay = operate(...previousDisplay);
-  currentValue = currentDisplay;
+  currentValue = +currentDisplay;
 
   updateCurrentUI();
   updatePreviousUI();
