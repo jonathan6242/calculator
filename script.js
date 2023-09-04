@@ -1,19 +1,20 @@
-const numberButtons = document.querySelectorAll('.btn__number');
-const operatorButtons = document.querySelectorAll('.btn__operator');
-const calculatorPrevious = document.querySelector('.calculator__previous');
-const calculatorCurrent = document.querySelector('.calculator__current');
-const decimalButton = document.getElementById('decimal');
-const equalsButton = document.getElementById('equals');
+const numberButtons = document.querySelectorAll(".btn__number");
+const operatorButtons = document.querySelectorAll(".btn__operator");
+const calculatorPrevious = document.querySelector(".calculator__previous");
+const calculatorCurrent = document.querySelector(".calculator__current");
+const decimalButton = document.getElementById("decimal");
+const equalsButton = document.getElementById("equals");
 
 let firstNumber;
 let operator;
 let secondNumber;
 let previousDisplay = [];
+let currentValue = 0;
 let currentDisplay = "";
 
 function operate(a, operator, b) {
   let result;
-  switch(operator) {
+  switch (operator) {
     case "+":
       result = add(a, b);
       break;
@@ -27,16 +28,16 @@ function operate(a, operator, b) {
       result = divide(a, b);
       break;
     case "%":
-      result = modulo(a, b);
+      result = percent(a);
       break;
   }
 
-  if(result !== "invalid") {
-    if(!Number.isInteger(+result)) {
-      result = (Math.round(Number.parseFloat(result) * 1000) / 1000);
+  if (result !== "invalid") {
+    if (!Number.isInteger(+result)) {
+      result = Math.round(Number.parseFloat(result) * 100000) / 100000;
     }
-    if(result >= (10 ** 10)) {
-      result = result.toExponential(3);
+    if (result >= 10 ** 10) {
+      result = result.toExponential(5);
     }
   }
 
@@ -56,85 +57,120 @@ function multiply(a, b) {
 }
 
 function divide(a, b) {
-  if(b === 0) {
+  if (b === 0) {
     return "invalid";
-  }
-  else {
+  } else {
     return a / b;
   }
 }
 
-function modulo(a, b) {
-  return a % b;
+function percent(a) {
+  return a * 0.01;
 }
 
 function updateCurrentUI() {
-  calculatorCurrent.innerHTML = currentDisplay;
+  calculatorCurrent.innerHTML = currentDisplay || "0";
 }
 
 function updatePreviousUI() {
   calculatorPrevious.innerHTML = previousDisplay.join(" ");
+  if (previousDisplay.length === 0) calculatorPrevious.innerHTML = "&nbsp;";
 }
 
 function clearAll() {
   previousDisplay = [];
   currentDisplay = "";
+  currentValue = +currentDisplay;
   calculatorPrevious.innerHTML = "&nbsp;";
   calculatorCurrent.innerHTML = 0;
 }
 
 function clearOne() {
-  if(currentDisplay.length < 1) return;
-  if(currentDisplay.length === 1) {
-    currentDisplay = "0";
+  if (currentDisplay.length < 1) return;
+  if (currentDisplay.length === 1) {
+    currentDisplay = "";
   } else {
     currentDisplay = currentDisplay.slice(0, -1);
   }
+  currentValue = +currentDisplay;
   updateCurrentUI();
 }
 
 function handleEquals() {
-  // Error handling
-  if(currentDisplay === "") return;
-  if(operate(...previousDisplay, +currentDisplay) === "invalid") {
-    calculatorCurrent.innerHTML = "Dumbass"
-    currentDisplay = "";
+  // Percentage
+  if (previousDisplay.includes("%")) {
+    handlePercent();
     return;
   }
-  if(previousDisplay.length === 3) {
-    previousDisplay[0] = +currentDisplay;
+  // Error handling
+  if (operate(...previousDisplay, currentValue) === "invalid") {
+    calculatorCurrent.innerHTML = "Dumbass";
+    currentDisplay = "";
+    currentValue = 0;
+    return;
   }
-  if(previousDisplay.length === 2) {
-    previousDisplay.push(+currentDisplay);
+  if (previousDisplay.length <= 1) return;
+  if (previousDisplay.length === 3) {
+    if (currentDisplay === "") {
+      previousDisplay[0] = currentValue;
+    } else {
+      previousDisplay = [];
+      updatePreviousUI();
+      return;
+    }
   }
-  currentDisplay = operate(...previousDisplay);
+  if (previousDisplay.length === 2) {
+    previousDisplay.push(currentValue);
+  }
+  currentValue = operate(...previousDisplay);
+  currentDisplay = currentValue;
+  updateCurrentUI();
+  updatePreviousUI();
+
+  currentDisplay = "";
+}
+
+function handleNumber(number) {
+  if (+number >= 10 ** 10) return;
+  // Only allow one zero before decimal
+  if (number === "0" && currentDisplay === "0") {
+    return;
+  }
+  if (currentDisplay && currentDisplay.split(".")[1]?.length >= 5) {
+    console.log("test");
+    return;
+  }
+  currentDisplay += number;
+  currentValue = +currentDisplay;
   updateCurrentUI();
   updatePreviousUI();
 }
 
-function handleNumber(number) {
-  if(+number >= (10 ** 10)) return;
-  currentDisplay += number;
-  updateCurrentUI();
-}
-
 function handleOperator(operator) {
-  if(previousDisplay.length === 2) {
-    if(operate(...previousDisplay, +currentDisplay) === "invalid") {
-      calculatorCurrent.innerHTML = "Dumbass"
+  console.log(currentValue);
+  console.log(currentDisplay);
+  console.log(previousDisplay);
+  if (previousDisplay.length === 2) {
+    if (
+      operator === "÷" &&
+      operate(...previousDisplay, currentValue) === "invalid"
+    ) {
+      calculatorCurrent.innerHTML = "Dumbass";
+      console.log("test");
       currentDisplay = "";
       return;
     }
     // Calculate result
-    previousDisplay.push(+currentDisplay);
+    previousDisplay.push(currentValue);
     currentDisplay = operate(...previousDisplay);
   }
   // Clear previous display
   previousDisplay = [];
 
   // Add new result and operator to previous display
-  previousDisplay.push(+currentDisplay);
+  previousDisplay.push(currentValue);
   previousDisplay.push(operator);
+  currentDisplay = currentValue;
 
   updateCurrentUI();
   updatePreviousUI();
@@ -143,42 +179,61 @@ function handleOperator(operator) {
 }
 
 function handleDecimal() {
-  if(currentDisplay.includes(".")) return;
-  if(currentDisplay === "") currentDisplay += "0";
+  if (currentDisplay.includes(".")) return;
+  if (currentDisplay === "") currentDisplay += "0";
   currentDisplay += ".";
   updateCurrentUI();
 }
 
+function handlePercent() {
+  if(previousDisplay.length === 2 && !previousDisplay.includes("%")) {
+    // Calculate result
+    previousDisplay.push(currentValue);
+    currentDisplay = operate(...previousDisplay);
+    currentValue = currentDisplay;
+  }
+
+  previousDisplay = [];
+  previousDisplay.push(currentValue);
+  previousDisplay.push("%");
+  currentDisplay = operate(...previousDisplay);
+  currentValue = currentDisplay;
+
+  updateCurrentUI();
+  updatePreviousUI();
+
+  currentDisplay = "";
+}
+
 // Event listeners
-equalsButton.addEventListener('click', handleEquals)
+equalsButton.addEventListener("click", handleEquals);
 
 // Number buttons
-for(const button of numberButtons) {
-  button.addEventListener('click', (e) => {
-    handleNumber(e.target.innerHTML)
-  })
+for (const button of numberButtons) {
+  button.addEventListener("click", (e) => {
+    handleNumber(e.target.innerHTML);
+  });
 }
 
 // Operator buttons
-for(const button of operatorButtons) {
-  button.addEventListener('click', (e) => {
-    handleOperator(e.target.innerHTML)
-  })
+for (const button of operatorButtons) {
+  button.addEventListener("click", (e) => {
+    handleOperator(e.target.innerHTML);
+  });
 }
 
 // Decimal button
-decimalButton.addEventListener('click', handleDecimal)
+decimalButton.addEventListener("click", handleDecimal);
 
 // Keyboard support
 document.onkeydown = (e) => {
   // Numbers
-  if(+e.key || e.key === "0") {
-    handleNumber(e.key)
+  if (+e.key || e.key === "0") {
+    handleNumber(e.key);
   }
-  switch(e.key) {
+  switch (e.key) {
     case "+":
     case "-":
-    case "%":
       e.preventDefault();
       handleOperator(e.key);
       break;
@@ -199,7 +254,12 @@ document.onkeydown = (e) => {
       e.preventDefault();
       handleDecimal();
       break;
+    case "%":
+      e.preventDefault();
+      handlePercent();
+      break;
     case "c":
+    case "Backspace":
       e.preventDefault();
       clearOne();
       break;
@@ -208,4 +268,4 @@ document.onkeydown = (e) => {
       clearAll();
       break;
   }
-}
+};
